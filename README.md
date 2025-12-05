@@ -37,13 +37,11 @@ The project requires multiple packages to be installed/imported to create the fi
 ```python
 CMS_BASE_URL = "https://data.cms.gov/provider-data/api/1/datastore/query/77hc-ibv8/0"
 PAGE_SIZE = 1500 
-
-CENSUS_API_KEY = #this is the API key, which can be requested from the CENSUS_BASE_URL. Since this repository is public, we have removed it for privacy issues
+CENSUS_API_KEY = # Since this repository is public, we have removed it for privacy issues
 CENSUS_BASE_URL = "https://api.census.gov/data/2023/acs/acs5/subject"
-
 GEOCODING_BASE_URL = "https://geocoding.geo.census.gov/geocoder/geographies/address"
 ```
-The constants had their own section in the code to allow a more organized code. The link to the 3 websites we used to create the dataset had their own variable created so it would cause less confusion when reading the code. The PAGE_SIZE has the value 1500 due to the CMS API limitation. 
+For organization, the constants had their own code block. The constants were base URLs for the APIs to allow for better reuse. The PAGE_SIZE has the value 1500 due to the CMS API limitation. 
 
 # Acquiring the CMS Data
 ```python
@@ -61,7 +59,7 @@ def fetch_page(offset: int) -> pd.DataFrame:
     print(f"Calling {url}")
     return pd.read_csv(url)
 ```
-This first chunk of code is a function that fetches a single page or batch of data from the CMS API since the CMS dataset is stored in pages on the website. It builds the full request by combining CMS_BASE_URL with several query parameters that tell the API to return results. After assembling the full URL string, the function prints it for debuggings so we can see which page is being called. Then it uses pandas.read_csv to fetch the CSV data directly from the URL andload it into a Pandas DataFrame. Then the code returns the DataFrame so the caller can work with the retrived page of API results.
+This first chunk of code is a function that fetches a single page from the CMS API. It builds the full request by combining CMS_BASE_URL with several query parameters that tell the API what to return and how to format the data. After assembling the full URL string, the function prints it for observability purposes. Then it uses `pandas.read_csv` to fetch the CSV data directly from the URL (this does a `GET` request behind the scence) and loads it into a Pandas DataFrame. Then the function returns the DataFrame.
 
 ```python
 def get_total_number_of_rows() -> int:
@@ -79,7 +77,7 @@ def get_total_number_of_rows() -> int:
 
 total_number_of_rows_for_cms_data = get_total_number_of_rows()
 ```
-To find out how many API calls needed to be done for the CMS data due to the 1500 row limitation, we wanted to find out the size of the CMS dataset. After runnining this code, the result was 172476 as the total number of rows.
+To find out how many API calls needed to be done for the CMS data due to the 1500 row limitation, we wanted to find out the size of the CMS dataset. This allows us to make batch calls concurrently instead of using a for-loop to make one request at a time. After running this code, the result was 172,476 as the total number of rows.
 
 ```python
 offsets = list(range(0, total_number_of_rows_for_cms_data, PAGE_SIZE))
@@ -102,7 +100,7 @@ print(cms_df.shape)
 cms_df.to_csv("cms-data.csv", index=False)
 cms_df.head()
 ```
-This code saves the CMS data acquired into a csv file and shows the first fewrows of the CMS data that was acquired. The next step is to clean up the CMS data.
+This code saves the CMS data acquired into a csv file and shows the first few rows of the CMS data that was acquired. The next step is to clean up the CMS data.
 
 
 # Preprocessing the CMS Data
@@ -111,7 +109,7 @@ def filter_for_pa(df: pd.DataFrame) -> pd.DataFrame:
   return df.query("State == 'PA'")
 ```
 
-Since we wanted to look at only the hospitals in the state of Pennsylvania (PA), we filtered the CMS to contain hospitals in PA only.
+We wanted to look at only hospitals in Pennsylvania (PA).
 
 
 ```python
