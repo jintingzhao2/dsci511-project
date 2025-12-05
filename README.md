@@ -10,7 +10,7 @@ No de-identification is needed since data is publicy available. The created data
 
 
 # Source of Data:
-[Centers for Medicaid & Medicare Services (CMS) Data:](https://geocoding.geo.census.gov/geocoder/geographies/address)
+[Centers for Medicaid & Medicare Services (CMS) Data:](https://data.cms.gov/provider-data/api/1/datastore/query/77hc-ibv8/0)
 - Facility ID, measure ID, measure name, benchmark status, numeric scores
 - Hospital location & ZIP code
 
@@ -100,8 +100,105 @@ print(cms_df.shape)
 cms_df.to_csv("cms-data.csv", index=False)
 cms_df.head()
 ```
-This code saves the CMS data acquired into a csv file and shows the first fewrows of the CMS data that was acquired. 
+This code saves the CMS data acquired into a csv file and shows the first fewrows of the CMS data that was acquired. The next step is to clean up the CMS data.
 
+
+# Preprocessing the CMS Data
+```python
+def filter_for_pa(df: pd.DataFrame) -> pd.DataFrame:
+  return df.query("State == 'PA'")
+```
+
+Since we wanted to look at only the hospitals in the state of Pennsylvania (PA), we filtered the CMS to contain hospitals in PA only.
+
+
+```python
+def pivot_by_measure_name(df: pd.DataFrame) -> pd.DataFrame:
+  return (
+      df.pivot(
+        index=[
+            "Facility ID", "Facility Name", "Address", "City/Town", "State",
+            "ZIP Code", "County/Parish", "Telephone Number", "Start Date",
+            "End Date"
+        ],
+        columns="Measure Name",
+        values="Score",
+    ).reset_index()
+  )
+```
+In the original CMS data, each row was a measure name  To make the CMS dataset easier to understand, we pivoted the the measure names from rows into columns. 
+
+
+```python
+def rename_cms_columns(df: pd.DataFrame) -> pd.DataFrame:
+  return df.rename(columns={
+    "Facility ID": "facility_id",
+    "Facility Name": "facility_name",
+    "Address": "address",
+    "City/Town": "city",
+    "State": "state",
+    "ZIP Code": "zip_code",
+    "County/Parish": "county",
+    "Telephone Number": "telephone_number",
+    "Start Date": "start_date",
+    "End Date": "end_date",
+
+    # CAUTI (Catheter Associated UTI)
+    "Catheter Associated Urinary Tract Infections (ICU + select Wards)": "cauti_sir",
+    "Catheter Associated Urinary Tract Infections (ICU + select Wards): Lower Confidence Limit": "cauti_lcl",
+    "Catheter Associated Urinary Tract Infections (ICU + select Wards): Number of Urinary Catheter Days": "cauti_catheter_days",
+    "Catheter Associated Urinary Tract Infections (ICU + select Wards): Observed Cases": "cauti_observed",
+    "Catheter Associated Urinary Tract Infections (ICU + select Wards): Predicted Cases": "cauti_predicted",
+    "Catheter Associated Urinary Tract Infections (ICU + select Wards): Upper Confidence Limit": "cauti_ucl",
+
+    # CLABSI
+    "Central Line Associated Bloodstream Infection (ICU + select Wards)": "clabsi_sir",
+    "Central Line Associated Bloodstream Infection (ICU + select Wards): Lower Confidence Limit": "clabsi_lcl",
+    "Central Line Associated Bloodstream Infection (ICU + select Wards): Observed Cases": "clabsi_observed",
+    "Central Line Associated Bloodstream Infection (ICU + select Wards): Predicted Cases": "clabsi_predicted",
+    "Central Line Associated Bloodstream Infection (ICU + select Wards): Upper Confidence Limit": "clabsi_ucl",
+    "Central Line Associated Bloodstream Infection: Number of Device Days": "clabsi_device_days",
+
+    # C.Diff
+    "Clostridium Difficile (C.Diff)": "cdiff_sir",
+    "Clostridium Difficile (C.Diff): Lower Confidence Limit": "cdiff_lcl",
+    "Clostridium Difficile (C.Diff): Observed Cases": "cdiff_observed",
+    "Clostridium Difficile (C.Diff): Patient Days": "cdiff_patient_days",
+    "Clostridium Difficile (C.Diff): Predicted Cases": "cdiff_predicted",
+    "Clostridium Difficile (C.Diff): Upper Confidence Limit": "cdiff_ucl",
+
+    # MRSA Bacteremia
+    "MRSA Bacteremia": "mrsa_sir",
+    "MRSA Bacteremia: Lower Confidence Limit": "mrsa_lcl",
+    "MRSA Bacteremia: Observed Cases": "mrsa_observed",
+    "MRSA Bacteremia: Patient Days": "mrsa_patient_days",
+    "MRSA Bacteremia: Predicted Cases": "mrsa_predicted",
+    "MRSA Bacteremia: Upper Confidence Limit": "mrsa_ucl",
+
+    # SSI – Abdominal Hysterectomy
+    "SSI - Abdominal Hysterectomy": "ssi_hyst_sir",
+    "SSI - Abdominal Hysterectomy: Lower Confidence Limit": "ssi_hyst_lcl",
+    "SSI - Abdominal Hysterectomy: Number of Procedures": "ssi_hyst_procedures",
+    "SSI - Abdominal Hysterectomy: Observed Cases": "ssi_hyst_observed",
+    "SSI - Abdominal Hysterectomy: Predicted Cases": "ssi_hyst_predicted",
+    "SSI - Abdominal Hysterectomy: Upper Confidence Limit": "ssi_hyst_ucl",
+
+    # SSI – Colon Surgery
+    "SSI - Colon Surgery": "ssi_colon_sir",
+    "SSI - Colon Surgery: Lower Confidence Limit": "ssi_colon_lcl",
+    "SSI - Colon Surgery: Number of Procedures": "ssi_colon_procedures",
+    "SSI - Colon Surgery: Observed Cases": "ssi_colon_observed",
+    "SSI - Colon Surgery: Predicted Cases": "ssi_colon_predicted",
+    "SSI - Colon Surgery: Upper Confidence Limit": "ssi_colon_ucl",
+})
+
+cms_transformed_df = (
+    cms_df.pipe(filter_for_pa)
+    .pipe(pivot_by_measure_name)
+    .pipe(rename_cms_columns)
+    .dropna()
+)
+```
 
 
 
