@@ -125,11 +125,7 @@ def pivot_by_measure_name(df: pd.DataFrame) -> pd.DataFrame:
         values="Score",
     ).reset_index()
   )
-```
-In the original CMS data, each row was a measure name  To make the CMS dataset easier to understand, we pivoted the the measure names from rows into columns. 
 
-
-```python
 def rename_cms_columns(df: pd.DataFrame) -> pd.DataFrame:
   return df.rename(columns={
     "Facility ID": "facility_id",
@@ -199,7 +195,7 @@ cms_transformed_df = (
     .dropna()
 )
 ```
-
+In the original CMS data, each row was a different measure id, which made it difficult to understand or see the difference in the socores. To make the CMS dataset easier to understand, we pivoted the the measure names from rows into columns to allow analysts to view each hospital, measure id, and their scores side by side. In addition, we renamed the Measure ID names to simplify and abbreviate it more since some of the names were very long. 
 
 
 
