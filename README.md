@@ -1,5 +1,19 @@
 # Healthcare Associated Infections in Hospitals by Income Trends - DSCI511 Final Project Group 5
 ## By Stefanie Jackson, Jonas Ventimiglia and Jin Ting Zhao
+# Table of Contents
+
+- [Summary](#summary)
+- [Source of Data](#source-of-data)
+- [Imports/Installations](#importsinstallations)
+- [Constants](#constants)
+- [Acquiring the CMS Data](#acquiring-the-cms-data)
+- [Preprocessing the CMS Data](#preprocessing-the-cms-data)
+- [Acquiring the Census Data](#acquiring-the-census-data)
+- [Acquiring the Geocoding Data](#acquiring-the-geocoding-data)
+- [Final Preprocessing Step](#final-preprocessing-step)
+- [Data Dictionary](#data-dictionary)
+- [How to Recreate the Project](#how-to-recreate-the-project)
+
 
 # Summary:
 The dataset for the project includes U.S. hospitals with their Healthcare-Associated Infection (HAI) scores and related measures, geographic coordinates (latitude and longitude), and county-level poverty rates. It was created to support analysis of how hospital infection outcomes relate to community socioeconomic factors. The dataset was created from acquiring data from 3 different sources: Centers for Medicaid & Medicare Services (CMS), Census Data, and the Geospatial Data
