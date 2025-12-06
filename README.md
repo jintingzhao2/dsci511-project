@@ -351,9 +351,9 @@ For our final transformation, we have to merge all three data sources together. 
 # How to Recreate the Project 
 1. Run these commands in the terminal
     ```bash
-    > python3.13 -m venv venv
-    > source venv/bin/activate
-    > pip install -r requirements.txt
+    python3.13 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
     ```
 2. Then copy the Jupyter Notebook to Google Colab or run `jupyter notebook`.
 
