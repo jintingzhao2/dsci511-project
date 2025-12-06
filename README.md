@@ -294,7 +294,12 @@ final_df = (
 ```
 For our final transformation, we have to merge all three data sources together. We apply an inner merge for Census with Geocoding on `tract`. Then we apply an inner merge for CMS with Census and Geocoding on the address.
 
+
 # Challenges and Limitations
+- Some issues we experienced in the project were dealing with CMS’s API row limits. Ideally when getting CMS data for PA, the API should have a parameter to filter for state. This would've helped with the number of requests, perhaps going from 115 requests to 1 request. This issue was resolved by using concurrency.  
+- A limitation is how we defined the geographical unit. For example in this project we decided on census tracts, this will impact the data output and interpretation. Had we chosen a larger unit like a zip code, our results and potentially interpretations would be different.
+- A challenge is that all our geocoding match relies on the MAF/TIGER geocoder. So in order for it to work, the MAF/TIGER geocoder must be accurate and up to date.
+- Another limitation is that income and poverty were used as proxies for disadvantage. This may not capture the full context since they are not the only metric for measuring disadvantages. 
 
 
 # Data Dictionary
