@@ -40,7 +40,7 @@ Dataset is located here - [**Final Dataset CMS_Census_Geodata_Merged.csv**](http
 - Tract ID
 - Address, City, State
 
-# Imports/Installations
+# Imports
 ```python
 import requests
 import pandas as pd
@@ -239,21 +239,18 @@ census_df = (
   }).drop(columns=["NAME", "state", "county"])
 )
 ```
+We call the Census API and feed the requests some parameters. These parameters allow us to select columns we want, such as median income and poverty %. It also allows us to filter only PA data. Additionally this API required an API key, which should always remain private, but for our project it will be public.
 
 # Acquiring the Geocoding Data
 ```python
-
 hospital_addresses = list(
     cms_transformed_df[["address", "city", "state"]].drop_duplicates()
     .itertuples(index=False, name=None)
 )
 
-
 def create_geocoding_url(street: str, city: str, state: str) -> str:
   print(street, city, state)
   return f"{GEOCODING_BASE_URL}?street={street}&city={city}&state={state}&benchmark=Public_AR_Current&vintage=Current_Current&layers=10&format=json"
-
-
 
 with ThreadPoolExecutor(max_workers=10) as executor:
   responses = list(executor.map(
@@ -279,6 +276,8 @@ for data in pa_geodata_data:
 pa_geodata_df = pd.DataFrame(pa_geodata)
 ```
 
+In order to map CMS data to Census data, we have to get the tract ID for CMS. We used the Geocoding API that given the street, city, and state, it will return a bunch of information, zip code, tract ID, x and y coordinates. To get the tract IDs for the hospitals we selected only the address, city, and state columns from CMS dataset and turned the dataframe into a list and deduped the values. Then we created the `create_geocoding_url` which takes in that information and calls the API once for those parameters. However for our use case we want to get that information for all the addresses, so we make concurrent API requests to speed things up. Then we process the responses, only get the tract IDs from the viable addresses, and finally convert it to a pandas dataframe.
+
 # Final Preprocessing Step
 ```python
 census_and_geodata_df = census_df.merge(pa_geodata_df, on="tract")
@@ -291,9 +290,70 @@ final_df = (
     )
 )
 ```
-
+For our final transformation, we have to merge all three data sources together. We apply an inner merge for Census with Geocoding on `tract`. Then we apply an inner merge for CMS with Census and Geocoding on the address.
 
 # Data Dictionary
+| Column Name | Description | Data Type |
+|-------------|-------------|-----------|
+| facility_id | Unique identifier for the hospital facility (CMS) | String / Integer |
+| facility_name | Name of the hospital facility | String |
+| street | Street address of the hospital | String |
+| city | City or town where the hospital is located | String |
+| state | State abbreviation | String |
+| zip_code | ZIP Code of the hospital | String / Integer |
+| county | County or parish of the facility | String |
+| telephone_number | Hospital contact phone number | String |
+| start_date | Start date of the reporting period | String (Date) |
+| end_date | End date of the reporting period | String (Date) |
+| cauti_sir | SIR for Catheter-Associated Urinary Tract Infections | Float |
+| cauti_lcl | Lower confidence limit for CAUTI SIR | Float |
+| cauti_catheter_days | Number of urinary catheter days | Integer / Float |
+| cauti_observed | Observed CAUTI cases | Integer |
+| cauti_predicted | Predicted CAUTI cases | Float |
+| cauti_ucl | Upper confidence limit for CAUTI SIR | Float |
+| clabsi_sir | SIR for Central Line-Associated Bloodstream Infections | Float |
+| clabsi_lcl | Lower confidence limit for CLABSI SIR | Float |
+| clabsi_observed | Observed CLABSI cases | Integer |
+| clabsi_predicted | Predicted CLABSI cases | Float |
+| clabsi_ucl | Upper confidence limit for CLABSI SIR | Float |
+| clabsi_device_days | Number of device days for CLABSI | Integer / Float |
+| cdiff_sir | SIR for C. difficile infections | Float |
+| cdiff_lcl | Lower confidence limit for C. diff SIR | Float |
+| cdiff_observed | Observed C. diff cases | Integer |
+| cdiff_patient_days | Patient-days for C. diff measure | Integer / Float |
+| cdiff_predicted | Predicted C. diff cases | Float |
+| cdiff_ucl | Upper confidence limit for C. diff SIR | Float |
+| mrsa_sir | SIR for MRSA bacteremia | Float |
+| mrsa_lcl | Lower confidence limit for MRSA SIR | Float |
+| mrsa_observed | Observed MRSA cases | Integer |
+| mrsa_patient_days | Patient-days for MRSA measure | Integer / Float |
+| mrsa_predicted | Predicted MRSA cases | Float |
+| mrsa_ucl | Upper confidence limit for MRSA SIR | Float |
+| ssi_hyst_sir | SIR for SSI – Abdominal Hysterectomy | Float |
+| ssi_hyst_lcl | Lower confidence limit for SSI (hysterectomy) SIR | Float |
+| ssi_hyst_procedures | Number of abdominal hysterectomy procedures | Integer |
+| ssi_hyst_observed | Observed SSI cases (hysterectomy) | Integer |
+| ssi_hyst_predicted | Predicted SSI cases for hysterectomy | Float |
+| ssi_hyst_ucl | Upper confidence limit for SSI (hysterectomy) SIR | Float |
+| ssi_colon_sir | SIR for SSI – Colon Surgery | Float |
+| ssi_colon_lcl | Lower confidence limit for SSI (colon surgery) SIR | Float |
+| ssi_colon_procedures | Number of colon surgery procedures | Integer |
+| ssi_colon_observed | Observed SSI cases (colon surgery) | Integer |
+| ssi_colon_predicted | Predicted SSI cases for colon surgery | Float |
+| ssi_colon_ucl | Upper confidence limit for SSI (colon surgery) SIR | Float |
+| median_income | Median household income for census tract | Integer / Float |
+| poverty_percentage | Percent of population below poverty line | Float |
+| tract | Census tract identifier | String / Integer |
+| x-coordinates | Longitude of hospital (geocoded) | Float |
+| y-coordinates | Latitude of hospital (geocoded) | Float |
 
 
-# How to Recreate the Project
+# How to Recreate the Project 
+1. Run these commands in the terminal
+    ```bash
+    > python3.13 -m venv venv
+    > source venv/bin/activate
+    > pip install -r requirements.txt
+    ```
+2. Then copy the Jupyter Notebook to Google Colab or run `jupyter notebook`.
+
