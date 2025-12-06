@@ -3,7 +3,7 @@
 # Table of Contents
 
 - [Summary](#summary)
-- [Source of Data](#source-of-data)
+- [Data Sources](#data-sources)
 - [Imports/Installations](#importsinstallations)
 - [Constants](#constants)
 - [Acquiring the CMS Data](#acquiring-the-cms-data)
@@ -23,7 +23,7 @@ The purpose of this dataset is to help identify patterns in infection disparitie
 Dataset is located here - [**Final Dataset CMS_Census_Geodata_Merged.csv**](https://github.com/jintingzhao2/dsci511-project/blob/main/Final%20Dataset%20CMS_Census_Geodata_Merged.csv).
 
 
-# Source of Data:
+# Data Sources:
 [Centers for Medicaid & Medicare Services (CMS) Data:](https://data.cms.gov/provider-data/api/1/datastore/query/77hc-ibv8/0)
 - Facility ID, Measure ID, Measure Name, Benchmark Status, Numeric Scores
 - Hospital Location & ZIP Code
