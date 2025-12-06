@@ -5,15 +5,17 @@ By Stefanie Jackson, Jonas Ventimiglia and Jin Ting Zhao
 
 - [Summary](#summary)
 - [Data Sources](#data-sources)
-- [Imports/Installations](#importsinstallations)
+- [Imports](#imports)
 - [Constants](#constants)
 - [Acquiring the CMS Data](#acquiring-the-cms-data)
 - [Preprocessing the CMS Data](#preprocessing-the-cms-data)
 - [Acquiring the Census Data](#acquiring-the-census-data)
 - [Acquiring the Geocoding Data](#acquiring-the-geocoding-data)
 - [Final Preprocessing Step](#final-preprocessing-step)
+- [Challenges and Limitations](#challenges-and-limitations)
 - [Data Dictionary](#data-dictionary)
 - [How to Recreate the Project](#how-to-recreate-the-project)
+
 
 
 # Summary:
@@ -291,6 +293,9 @@ final_df = (
 )
 ```
 For our final transformation, we have to merge all three data sources together. We apply an inner merge for Census with Geocoding on `tract`. Then we apply an inner merge for CMS with Census and Geocoding on the address.
+
+# Challenges and Limitations
+
 
 # Data Dictionary
 | Column Name | Description | Data Type |
