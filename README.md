@@ -195,8 +195,90 @@ cms_transformed_df = (
     .dropna()
 )
 ```
-In the original CMS data, each row was a different measure id, which made it difficult to understand or see the difference in the socores. To make the CMS dataset easier to understand, we pivoted the the measure names from rows into columns to allow analysts to view each hospital, measure id, and their scores side by side. In addition, we renamed the Measure ID names to simplify and abbreviate it more since some of the names were very long. 
+In the original CMS data, each row was a different measure name, so we weren't able to use the score as a column, which would make data analysis difficult. For example, one row would be representing number of days while another could be number of observed cases. In order to make the data more usable, we pivoted the the measure names from rows into columns to allow analysts to view each hospital, measure id, and their scores side by side. In addition, we renamed the Measure ID names to simplify and abbreviate it more since some of the names were very long.
+
+# Acquiring the Census Data
+
+```python
+def get_census_data() -> pd.DataFrame:
+  # Defining query parameters
+  params = {
+      "get": "NAME,S1901_C01_012E,S1701_C03_001E",  # Median Income, Poverty %
+      "for": "tract:*",                             # All tracts
+      "in": "state:42 county:*",                    # PA = FIPS 42, all counties in PA
+      "key": CENSUS_API_KEY
+  }
+
+  # Making requests
+  response = requests.get(CENSUS_BASE_URL, params=params)
+  data = response.json()
+
+  # Converting to DataFrame
+  return pd.DataFrame(data[1:], columns=data[0])
+
+census_df = get_census_data()
+census_df = (
+    census_df.rename(columns={
+      "S1901_C01_012E": "median_income",
+      "S1701_C03_001E": "poverty_percentage",
+  }).drop(columns=["NAME", "state", "county"])
+)
+```
+
+# Acquiring the Geocoding Data
+```python
+
+hospital_addresses = list(
+    cms_transformed_df[["address", "city", "state"]].drop_duplicates()
+    .itertuples(index=False, name=None)
+)
+
+
+def create_geocoding_url(street: str, city: str, state: str) -> str:
+  print(street, city, state)
+  return f"{GEOCODING_BASE_URL}?street={street}&city={city}&state={state}&benchmark=Public_AR_Current&vintage=Current_Current&layers=10&format=json"
 
 
 
+with ThreadPoolExecutor(max_workers=10) as executor:
+  responses = list(executor.map(
+      lambda hospital_address: requests.get(
+          create_geocoding_url(street=hospital_address[0], city=hospital_address[1], state=hospital_address[2])
+      ), hospital_addresses
+  ))
 
+pa_geodata_data = [response.json() for response in responses]
+
+pa_geodata = []
+for data in pa_geodata_data:
+  if data["result"]["addressMatches"]:
+    pa_geodata.append({
+        "city": data["result"]["input"]["address"]["city"],
+        "street": data["result"]["input"]["address"]["street"],
+        "state": data["result"]["input"]["address"]["state"],
+        "x-coordinates": data["result"]["addressMatches"][0]["coordinates"]["x"],
+        "y-coordinates": data["result"]["addressMatches"][0]["coordinates"]["y"],
+        "tract": data["result"]["addressMatches"][0]["geographies"]["Census Block Groups"][0]["TRACT"]
+    })
+
+pa_geodata_df = pd.DataFrame(pa_geodata)
+```
+
+# Final Preprocessing Step
+```python
+census_and_geodata_df = census_df.merge(pa_geodata_df, on="tract")
+final_df = (
+    cms_transformed_df
+    .rename(columns={"address": "street"})
+    .merge(
+        census_and_geodata_df,
+        on=["street", "city", "state"]
+    )
+)
+```
+
+
+# Data Dictionary
+
+
+# How to Recreate the Project
