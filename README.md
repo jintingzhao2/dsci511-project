@@ -1,6 +1,7 @@
 # Healthcare Associated Infections in Hospitals by Income Trends - DSCI511 Final Project Group 5
-## By Stefanie Jackson, Jonas Ventimiglia and Jin Ting Zhao
-# Table of Contents
+By Stefanie Jackson, Jonas Ventimiglia and Jin Ting Zhao
+
+## Table of Contents
 
 - [Summary](#summary)
 - [Data Sources](#data-sources)
